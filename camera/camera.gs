@@ -36,8 +36,8 @@ proc add_cam_basis zoom, _sin, _cos, Node i, Node j {
 
 func cam_apply_node(Node p) Node {
     return Node {
-        x: _camera.s * ((($p.y - _camera.y) * _cam_j_hat.x + ($p.x - _camera.x) * _cam_i_hat.x)),
-        y: _camera.s * ((($p.y - _camera.y) * _cam_j_hat.y + ($p.x - _camera.x) * _cam_i_hat.y))
+        x: (($p.y - _camera.y) * _cam_j_hat.x + ($p.x - _camera.x) * _cam_i_hat.x),
+        y: (($p.y - _camera.y) * _cam_j_hat.y + ($p.x - _camera.x) * _cam_i_hat.y)
     };
 } 
 
@@ -49,6 +49,14 @@ func cam_apply_pos(pos p) pos {
         s: _camera.s * $p.s,
         d: $p.d + _camera.d
     };
+}
+
+proc move_camera dx, dy, ds, dd {
+    _camera.x += $dx * _cam_i_hat.x + $dy * _cam_i_hat.y;
+    _camera.y += $dx * _cam_j_hat.x + $dy * _cam_j_hat.y;
+
+    _camera.s += $ds;
+    _camera.d += $dd;
 }
 
 ################################################################

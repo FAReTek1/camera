@@ -18,10 +18,10 @@ onflag {
 }
 
 proc tick {
-    _camera.x += 5 * (key_pressed("d") - key_pressed("a"));
-    _camera.y += 5 * (key_pressed("w") - key_pressed("s"));
-    _camera.s += 0.05 * (key_pressed("z") - key_pressed("x"));
-    _camera.d += 5 * (key_pressed("e") - key_pressed("q"));
+    move_camera 5 * (key_pressed("d") - key_pressed("a")),
+                5 * (key_pressed("w") - key_pressed("s")),
+                0.05 * (key_pressed("z") - key_pressed("x")),
+                5 * (key_pressed("e") - key_pressed("q"));
 
     INFER_CAM_BASIS();
 

@@ -1,5 +1,5 @@
   # camera.gs
-  This is a pen engine which is built for [goboscript](https://github.com/aspizu/goboscript).
+  This is a camera control system which is built for [goboscript](https://github.com/aspizu/goboscript).
   It is designed to be used with [backpack](https://github.com/aspizu/backpack)
   
   ## Installation
