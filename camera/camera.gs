@@ -3,19 +3,41 @@
 # it's not very good to pollute the global name space like this :\
 # i put an underscore but its still not very good
 
-onflag{
-    pos _camera = pos{
-        x: 0,
-        y: 0,
-        s: 1, # not a percentage
-        d: 0
+
+%define RESET_CAM_BASIS() \
+    Node _cam_i_hat = Node{x: 1, y: 0}; \
+    Node _cam_j_hat = Node{x: 0, y: 1};
+
+# 'infer' basis - just set basis using existing cam d/s vars
+%define INFER_CAM_BASIS() set_cam_basis _camera.s, sin(_camera.d), cos(_camera.d)
+
+proc set_cam_basis zoom, _sin, _cos {
+    _cam_i_hat = Node{
+        x: $_cos * $zoom,
+        y: -$_sin * $zoom
+    };
+    _cam_j_hat = Node{
+        x: $_sin * $zoom,
+        y: $_cos * $zoom
+    };
+}
+
+proc add_cam_basis zoom, _sin, _cos, Node i, Node j {
+    # set camera basis vectors, by applying to exisiting basis vectors, allowing for skew
+    _cam_i_hat = Node{
+        x: ($_cos * $i.x + $_sin * $i.y) * $zoom,
+        y: ($_cos * $i.y - $_sin * $i.x) * $zoom
+    };
+    _cam_j_hat = Node{
+        x: ($_cos * $j.x + $_sin * $j.y) * $zoom,
+        y: ($_cos * $j.y - $_sin * $j.x) * $zoom
     };
 }
 
 func cam_apply_node(Node p) Node {
     return Node {
-        x: _camera.s * ((($p.y - _camera.y) * sin(_camera.d) + ($p.x - _camera.x) * cos(_camera.d))),
-        y: _camera.s * ((($p.y - _camera.y) * cos(_camera.d) - ($p.x - _camera.x) * sin(_camera.d)))
+        x: _camera.s * ((($p.y - _camera.y) * _cam_j_hat.x + ($p.x - _camera.x) * _cam_i_hat.x)),
+        y: _camera.s * ((($p.y - _camera.y) * _cam_j_hat.y + ($p.x - _camera.x) * _cam_i_hat.y))
     };
 } 
 
@@ -29,3 +51,14 @@ func cam_apply_pos(pos p) pos {
     };
 }
 
+################################################################
+
+onflag{
+    pos _camera = pos{
+        x: 0,
+        y: 0,
+        s: 1,
+        d: 0
+    };
+    RESET_CAM_BASIS();
+}
