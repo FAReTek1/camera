@@ -1,18 +1,26 @@
 %include backpack/camera/camera
 
 costumes "blank.svg", "cat.svg";
-
+hide;
 list pos cats = [];
+list cats_rot = [];
 
 onflag {
     delete cats;
+
+    s = 1;
+    # by using s, it will be in layer order :)
+    # that also means that it's less likely for stuff to be hidden behind other stuff
     repeat 100{
         add pos{
             x: random(-240, 240),
             y: random(-180, 180),
-            s: random(0, 100),
+            s: s,
             d: random(0, 360)
         } to cats;
+
+        add random(10, 180) to cats_rot;
+        s++;
     };
 
     forever{tick;}
@@ -36,8 +44,41 @@ proc tick {
 
     i = 1;
     repeat length cats {
-        goto_pos cam_apply_pos(cats[i]);
+        pos cat_pos = cam_apply_pos(cats[i]);
+
+        cat_pos.x += cat_pos.s * sin(cats_rot[i] * timer());
+        cat_pos.y += cat_pos.s * cos(cats_rot[i] * timer());
+        cat_pos.d += timer() * cats_rot[i];
+
+        # stamp shadow
+        set_brightness_effect -100;
+        set_ghost_effect 90;
+        goto_pos pos{
+            x: cat_pos.x + 0.1 * cat_pos.s, 
+            y: cat_pos.y - 0.1 * cat_pos.s, 
+            s: cat_pos.s, 
+            d: cat_pos.d};
         stamp;
+
+        goto_pos cat_pos;
+
+        clear_graphic_effects;
+        if touching("_mouse_") {
+            goto_pos cat_pos;
+            stamp;
+        } else {
+
+            # stamp in partial grayscale
+            goto_pos cat_pos;
+            clear_graphic_effects;
+            stamp;
+
+            set_color_effect 100;
+            set_ghost_effect 60;
+            stamp;
+
+        }
+
         i++;
     }
 
