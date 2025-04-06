@@ -51,12 +51,48 @@ func cam_apply_pos(pos p) pos {
     };
 }
 
-proc move_camera dx, dy, ds, dd {
-    _camera.x += $dx * _cam_i_hat.x + $dy * _cam_i_hat.y;
-    _camera.y += $dx * _cam_j_hat.x + $dy * _cam_j_hat.y;
+func cam_inverse(Node p) Node {
+    local y = _camera.y + ($p.x * _cam_i_hat.y - $p.y * _cam_i_hat.x) / (_cam_j_hat.x * _cam_i_hat.y - _cam_i_hat.x * _cam_j_hat.y);
+    return Node{
+        x: _camera.x + ($p.x - _cam_j_hat.x * (y - _camera.y)) / _cam_i_hat.x, y: y
+    };
+}
 
-    _camera.s += $ds;
+%define CAM_INV_MOUSE() cam_inverse(node_mouse())
+
+proc move_camera dx, dy, ds, dd, Node d_mouse, prev_mouse_down, dynamic_zoom {
+    # dynamic zoom is whether to increase the zoom more/less depending on the current zoom
+    local dx = $dx - $d_mouse.x / (_camera.s * _camera.s) * $prev_mouse_down;
+    local dy = $dy - $d_mouse.y / (_camera.s * _camera.s) * $prev_mouse_down;
+
+    _camera.x += dx * _cam_i_hat.x + dy * _cam_i_hat.y;
+    _camera.y += dx * _cam_j_hat.x + dy * _cam_j_hat.y;
+
     _camera.d += $dd;
+
+    # zoom out from mouse pointer
+    local Node mnode = CAM_INV_MOUSE();
+    
+    
+    if $dynamic_zoom {
+        local ds = $ds * _camera.s;
+    } else {
+        local ds = $ds;
+    }
+
+    if ds > 1 {
+        # Don't overshoot
+        _camera.x = mnode.x;
+        _camera.y = mnode.y;
+
+    } else {
+        local Node diff = Node{x: mnode.x - _camera.x, y: mnode.y - _camera.y};
+
+        _camera.x += diff.x * ds;
+        _camera.y += diff.y * ds;
+    }
+
+    _camera.s += ds;
 }
 
 ################################################################
