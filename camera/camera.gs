@@ -34,19 +34,22 @@ proc add_cam_basis zoom, _sin, _cos, Node i, Node j {
     };
 }
 
-func cam_apply_node(Node p) Node {
-    return Node {
-        x: (($p.y - _camera.y) * _cam_j_hat.x + ($p.x - _camera.x) * _cam_i_hat.x),
-        y: (($p.y - _camera.y) * _cam_j_hat.y + ($p.x - _camera.x) * _cam_i_hat.y)
-    };
-} 
 
+
+%define CAM_APPLY_NODE(p) Node { \
+        x: ((p.y - _camera.y) * _cam_j_hat.x + (p.x - _camera.x) * _cam_i_hat.x), \
+        y: ((p.y - _camera.y) * _cam_j_hat.y + (p.x - _camera.x) * _cam_i_hat.y) \
+    }
+
+func cam_apply_node(Node p) Node {
+    return CAM_APPLY_NODE($p);
+}
 
 func cam_apply_pos(pos p) pos {
     Node p = cam_apply_node(Node{x: $p.x, y: $p.y});
     return pos{
         x: p.x, y: p.y,
-        s: _camera.s * $p.s,
+        s: $p.s * _camera.s,
         d: $p.d + _camera.d
     };
 }
@@ -55,6 +58,16 @@ func cam_inverse(Node p) Node {
     local y = _camera.y + ($p.x * _cam_i_hat.y - $p.y * _cam_i_hat.x) / (_cam_j_hat.x * _cam_i_hat.y - _cam_i_hat.x * _cam_j_hat.y);
     return Node{
         x: _camera.x + ($p.x - _cam_j_hat.x * (y - _camera.y)) / _cam_i_hat.x, y: y
+    };
+}
+
+func cam_inverse_pos(pos p) pos {
+    Node inv = cam_inverse Node{x: $p.x, y: $p.y};
+    return pos {
+        x: inv.x,
+        y: inv.y,
+        s: $p.s / _camera.s,
+        d: $p.d - _camera.d
     };
 }
 
