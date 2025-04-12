@@ -52,15 +52,8 @@ proc tick {
 
         # stamp shadow
         set_brightness_effect -100;
-        set_ghost_effect 90;
-        goto_pos pos{
-            x: cat_pos.x + 0.1 * cat_pos.s, 
-            y: cat_pos.y - 0.1 * cat_pos.s, 
-            s: cat_pos.s, 
-            d: cat_pos.d};
-        stamp;
-
         goto_pos cat_pos;
+        cstamp_shadow Node{x:0.1 * cat_pos.s, y:-0.1 * cat_pos.s}, 90;
 
         clear_graphic_effects;
         if touching("_mouse_") {
@@ -81,6 +74,10 @@ proc tick {
 
         i++;
     }
+
+    Node mouse = CAM_INV_MOUSE();
+
+    cfill_aw pos{x: mouse.x, y: mouse.y, s: 100, d: 90}, 0.5 + 0.5 * sin(90 * timer());
 
     env_tick;
 }
