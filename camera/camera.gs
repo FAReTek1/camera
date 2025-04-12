@@ -41,6 +41,15 @@ proc add_cam_basis zoom, _sin, _cos, Node i, Node j {
         y: ((p.y - _camera.y) * _cam_j_hat.y + (p.x - _camera.x) * _cam_i_hat.y) \
     }
 
+%define CAM_APPLY_VEC(p)  Node { \
+        x: (p.y * _cam_j_hat.x + p.x * _cam_i_hat.x), \
+        y: (p.y * _cam_j_hat.y + p.x * _cam_i_hat.y) \
+    }
+
+func cam_apply_vec(Node p) {
+    return CAM_APPLY_VEC($p);
+}
+
 func cam_apply_node(Node p) Node {
     return CAM_APPLY_NODE($p);
 }
@@ -62,7 +71,7 @@ func cam_inverse(Node p) Node {
 }
 
 func cam_inverse_pos(pos p) pos {
-    Node inv = cam_inverse Node{x: $p.x, y: $p.y};
+    Node inv = cam_inverse(Node{x: $p.x, y: $p.y});
     return pos {
         x: inv.x,
         y: inv.y,
@@ -106,6 +115,19 @@ proc move_camera dx, dy, ds, dd, Node d_mouse, prev_mouse_down, dynamic_zoom {
     }
 
     _camera.s += ds;
+}
+
+proc cam_goto_node Node p {
+    node_goto CAM_APPLY_NODE($p);
+}
+
+proc cam_goto_pos Node p {
+    goto_pos cam_apply_pos($p);
+}
+
+proc cam_change_xy Node dn {
+    Node dn = CAM_APPLY_VEC($dn);
+    change_xy dn.x, dn.y;
 }
 
 ################################################################
