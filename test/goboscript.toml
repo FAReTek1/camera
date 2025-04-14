@@ -4,4 +4,4 @@ frame_interpolation = false
 high_quality_pen = false
 
 [dependencies]
-pengine = "https://github.com/FAReTek1/pengine@v0.0.0b7"
+pengine = "https://github.com/FAReTek1/pengine@v0.1.0"
